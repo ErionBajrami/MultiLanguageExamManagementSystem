@@ -1,0 +1,21 @@
+"Serilog": {
+    "Using": [ "Serilog.Sinks.MSSqlServer" ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Error",
+        "System": "Debug"
+      }
+    },
+    "Enrich": [ "FromLogContext", "WithMachineName", "WithProcessId", "WithThreadId" ],
+    "WriteTo": [
+      {
+        "Name": "MSSqlServer",
+        "Args": {
+          "connectionString": "Server=.;Database=LifeExam;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True",
+          "tableName": "Logs",
+          "autoCreateSqlTable": true
+        }
+      }
+    ]
+  },

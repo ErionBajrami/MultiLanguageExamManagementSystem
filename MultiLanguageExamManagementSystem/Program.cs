@@ -1,17 +1,12 @@
 using AutoMapper;
 using LifeEcommerce.Helpers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
 using MultiLanguageExamManagementSystem.Data;
 using MultiLanguageExamManagementSystem.Data.UnitOfWork;
 using MultiLanguageExamManagementSystem.Services.IServices;
 using MultiLanguageExamManagementSystem.Services;
 using Serilog;
-using Microsoft.AspNetCore.Hosting;
 using MultiLanguageExamManagementSystem.Helpers;
-
-Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "C:\\Users\\AURON\\Desktop\\Homework\\Homework2\\MultiLanguageExamManagementSystem\\MultiLanguageExamManagementSystem\\Resources\\translation.json");
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -5,8 +5,6 @@ using MultiLanguageExamManagementSystem.Data.UnitOfWork;
 using MultiLanguageExamManagementSystem.Models.Dtos;
 using MultiLanguageExamManagementSystem.Models.Entities;
 using MultiLanguageExamManagementSystem.Services.IServices;
-using System.Globalization;
-using AutoMapper;
 
 namespace MultiLanguageExamManagementSystem.Services;
 
