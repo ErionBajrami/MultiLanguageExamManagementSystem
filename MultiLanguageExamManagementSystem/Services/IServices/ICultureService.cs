@@ -1,42 +1,33 @@
-﻿using LifeEcommerce.Helpers;
-using Microsoft.Extensions.Localization;
-using MultiLanguageExamManagementSystem.Models.Dtos;
+﻿using MultiLanguageExamManagementSystem.Models.Dtos;
 using MultiLanguageExamManagementSystem.Models.Entities;
-
-//using MultiLanguageExamManagementSystem.Models.Dtos;
 
 namespace MultiLanguageExamManagementSystem.Services.IServices
 {
     public interface ICultureService
     {
-        // Your code here
-        // methods for string localization, languages and localization resources
+        LocalizationResource this[string locator] { get; }
 
-        #region String Localization
+        LocalizationResource GetString(string locator);
 
-        Task<string> LocalizeString(string key, string languageCode);
-        
-        #endregion
+        string GetLocator(string @namespace, string key);
 
-        #region Language
 
-        Task<IEnumerable<Language>> GetAllLanguages();
-        Task<Language> GetLanguageById(int id);
-        Task<Language> GetLanguageByCode(string languageCode);
-        void AddLanguage(LanguageDto languageDto);
-        void UpdateLanguage(Language language);
+        Task<List<LanguageRequestDTO>> GetLanguages();
+
+        Task<LanguageRequestDTO> GetLanguageById(int id);
+        Task CreateLanguage(LanguageResponseDTO languageResponseDto);
+        Task UpdateLanguage(int id, LanguageResponseDTO languageResponseDto);
         Task DeleteLanguage(int id);
 
-        #endregion
 
-        #region Localization Resources
+        Task<List<LocalizationResourceRequestDTO>> GetLocalizationResources();
+        Task<LocalizationResourceRequestDTO> GetLocalizationResourceById(int id);
+        Task<List<LocalizationResourceRequestDTO>> GetLocalizationResourcesByLanguageId(int languageId);
+        Task CreateLocalizationResource(LocalizationResourceResponseDTO resourceResponseDto);
+        Task UpdateLocalizationResource(int id, LocalizationResourceResponseDTO resourceResponseDto);
+        Task DeleteLocalizationResource(string @namespace, string key);
 
-        Task<IEnumerable<LocalizationResource>> GetAllLocalizationResources();
-        Task<LocalizationResource> GetLocalizationByIdAsync(int id);
-        void AddLocalizationResource(LocalizationResource localization);
-        void UpdateLocalization(LocalizationResource localization);
-        Task DeleteLocalization(int id);
-
-        #endregion
+        // Your code here
+        // methods for string localization, languages and localization resources
     }
 }

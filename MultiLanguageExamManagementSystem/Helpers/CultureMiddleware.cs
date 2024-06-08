@@ -14,18 +14,27 @@ namespace MultiLanguageExamManagementSystem.Helpers
         public async Task InvokeAsync(HttpContext context)
         {
             // Your code here
-
-            // read the accept language header and set the current culture based on it 
-            var cultureQuery = context.Request.Headers["Accept-Language"].ToString();
-
-            var culture = !string.IsNullOrWhiteSpace(cultureQuery)
-                ? new CultureInfo(cultureQuery)
-                : CultureInfo.CurrentCulture;
-
+            // read the accept language header and set the current culture based on it
+            var acceptLanguageHeader = context.Request.Headers["Accept-Language"].ToString();
+            var culture = DeterminePreferredCulture(acceptLanguageHeader);
             CultureInfo.CurrentCulture = culture;
-            CultureInfo.CurrentUICulture = culture;
-
             await _next(context);
+        }
+
+        private CultureInfo DeterminePreferredCulture(string acceptLanguageHeader)
+        {
+            if (!string.IsNullOrEmpty(acceptLanguageHeader))
+            {
+                var cultures = acceptLanguageHeader.Split(',');
+                foreach (var culture in cultures)
+                {
+                    if (CultureInfo.GetCultures(CultureTypes.AllCultures).Any(c => c.Name == culture))
+                    {
+                        return new CultureInfo(culture);
+                    }
+                }
+            }
+            return new CultureInfo("en-US");
         }
     }
 

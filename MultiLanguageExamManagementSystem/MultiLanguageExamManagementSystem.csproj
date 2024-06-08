@@ -28,34 +28,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Migrations\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Update="Resources\LocalizationResource-en-US.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>LocalizationResource-en-US.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\LocalizationResource-sq-AL.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>LocalizationResource-sq-Al.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\LocalizationResource-sq-AL.resx">
-	    <LastGenOutput>LocalizationResource-sq-AL.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Update="Resources\LocalizationResource-en-US.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>LocalizationResource-en-US.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\LocalizationResource-sq-AL.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>LocalizationResource-sq-AL.resx</DependentUpon>
-	  </Compile>
+	  <Folder Include="Resources\" />
 	</ItemGroup>
 
 </Project>

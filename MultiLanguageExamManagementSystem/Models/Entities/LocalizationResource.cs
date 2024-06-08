@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MultiLanguageExamManagementSystem.Models.Entities
 {
     public class LocalizationResource
     {
+        [Key]
         public int Id { get; set; }
 
         [MaxLength(200)]

@@ -1,12 +1,6 @@
-using AutoMapper;
-using Google.Cloud.Translation.V2;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using MultiLanguageExamManagementSystem.Models.Dtos;
-using MultiLanguageExamManagementSystem.Models.Entities;
-using MultiLanguageExamManagementSystem.Services;
 using MultiLanguageExamManagementSystem.Services.IServices;
-using Language = Google.Cloud.Translation.V2.Language;
 
 namespace MultiLanguageExamManagementSystem.Controllers
 {
@@ -16,94 +10,141 @@ namespace MultiLanguageExamManagementSystem.Controllers
     {
         private readonly ILogger<LocalizationsController> _logger;
         private readonly ICultureService _cultureService;
-        private readonly TranslationService _translationService;
-        private readonly IMapper _mapper;
 
-        public LocalizationsController(ILogger<LocalizationsController> logger, ICultureService cultureService, TranslationService translationService, IMapper mapper)
+        public LocalizationsController(ILogger<LocalizationsController> logger, ICultureService cultureService)
         {
             _logger = logger;
             _cultureService = cultureService;
-            _translationService = translationService;
-            _mapper = mapper;
         }
 
         // Your code here
 
         [HttpGet(Name = "GetLocalizationResource")]
-        public async Task<IActionResult> GetLocalizationResource([FromQuery] string key)
+        public IActionResult GetLocalizationResource(string @namespace, string key)
+        // public async Task<IActionResult> GetLocalizationResource()
         {
+            // var @namespace = "testspace";
+            // var key = "ttt";
             // implement the logic that allows us to call the culture service like this, note that the string we are 
             // sending "ne.1" it is of form namespace.key, in this case "ne" is the namespace and "1" is the key
             // so you should return back the localization resource that is having this namespace and key and the
             // language code based in the request header
+            var locator = _cultureService.GetLocator(@namespace, key);
+            var message = _cultureService[locator];
+            //var message = _cultureService.GetString(locator).Value; // Implement this too
 
-            //var message = _cultureService["ne.1"];
-            //var message = _cultureService.GetString("ne.1").Value; // Implement this too
+            if (message is null)
+            {
+                return NotFound();
+            }
 
-            //return Ok("hello");
-
-            var languageCode = Request.Headers["Accept-Language"].ToString();
-            var message = await _cultureService.LocalizeString(key, languageCode);
-
-            return Ok(message);
+            return Ok(message.Value);
         }
 
-        [HttpPost("AddLanguage")]
-        public async Task<IActionResult> AddLanguage([FromBody] LanguageDto languageDto)
+        [HttpGet("/Languages")]
+        public async Task<IActionResult> GetLanguages()
         {
-            var existingLanguage = await _cultureService.GetLanguageByCode(languageDto.LanguageCode);
-            if (existingLanguage != null)
-            {
-                return BadRequest("Language already exists.");
-            }
+            var languages = await _cultureService.GetLanguages();
 
-            var localizationResources = await _cultureService.GetAllLocalizationResources();
-            foreach (var resource in localizationResources)
-            {
-                var translation = await _translationService.TranslateText(resource.Value, languageDto.LanguageCode);
-                var newResource = new LocalizationResource()
-                {
-                    Key = resource.Key,
-                    Value = translation,
-                    LanguageId = languageDto.Id
-                };
-
-                _cultureService.AddLocalizationResource(newResource);
-            }
-
-            _cultureService.AddLanguage(languageDto);
-
-            return Ok(languageDto);
+            return Ok(languages);
         }
-        
-        
-        
-        
-        // var existingLanguage = await _cultureService.GetLanguageByCode(languageDto.LanguageCode);
-        // if (existingLanguage != null)
-        // {
-        //     return BadRequest("Language already exists.");
-        // }
-        //
-        // var localizationResource = await _cultureService.GetAllLocalizationResources();
-        //
-        // foreach (var resource in localizationResource)
-        // {
-        //     var translate = await _translationService.TranslateText(resource.Value, languageDto.LanguageCode);
-        //     var newRes = new LocalizationResource()
-        //     {
-        //         Key = resource.Key,
-        //         Value = translate,
-        //         LanguageId = languageDto.Id
-        //     };
-        //     
-        //     _cultureService.AddLocalizationResource(newRes);
-        // }
-        //
-        // var language = _mapper.Map<Language>(languageDto);
-        // _cultureService.AddLanguage(language);
-        //
-        // return Ok(language);
+
+        [HttpGet("/Languages/{id}")]
+        public async Task<IActionResult> GetLanguageById(int id)
+        {
+            var language = await _cultureService.GetLanguageById(id);
+
+            if (language is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(language);
+        }
+
+        [HttpPost("/Languages")]
+        public async Task<IActionResult> CreateLanguage(LanguageResponseDTO languageResponseDto)
+        {
+            await _cultureService.CreateLanguage(languageResponseDto);
+
+            return Ok();
+        }
+
+        [HttpPut("/languages/{id}")]
+        public IActionResult UpdateLanguage(int id, LanguageResponseDTO languageResponseDto)
+        {
+            _cultureService.UpdateLanguage(id, languageResponseDto);
+
+            return Ok();
+        }
+
+        [HttpDelete("/languages/{id}")]
+        public IActionResult DeleteLanguage(int id)
+        {
+            _cultureService.DeleteLanguage(id);
+
+            return Ok();
+        }
+
+        [HttpGet("/LocalizationResources")]
+        public async Task<IActionResult> GetLocalizationResources()
+        {
+            var localizationResources = await _cultureService.GetLocalizationResources();
+
+            return Ok(localizationResources);
+        }
+
+        [HttpGet("/LocalizationResources/{id:int}")]
+        public async Task<IActionResult> GetLocalizationResourceById(int id)
+        {
+            var localizationResource = await _cultureService.GetLocalizationResourceById(id);
+
+            if (localizationResource is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(localizationResource);
+        }
+
+        [HttpGet("/LocalizationResources/Language/{languageId:int}")]
+        public async Task<IActionResult> GetLocalizationResourcesByLanguageId(int languageId)
+        {
+            var localizationResources = await _cultureService.GetLocalizationResourcesByLanguageId(languageId);
+
+            return Ok(localizationResources);
+        }
+
+        [HttpPost("/LocalizationResources")]
+        public async Task<IActionResult> CreateLocalizationResource(LocalizationResourceResponseDTO localizationResponseDto)
+        {
+            var locator = _cultureService.GetLocator(localizationResponseDto.Namespace, localizationResponseDto.Key);
+            var message = _cultureService[locator];
+            if (message is not null)
+            {
+                return BadRequest();
+            }
+
+            await _cultureService.CreateLocalizationResource(localizationResponseDto);
+
+            return Ok();
+        }
+
+        [HttpPut("/LocalizationResources/{id:int}")]
+        public async Task<IActionResult> UpdateLocalizationResource(int id, LocalizationResourceResponseDTO localizationResourceResponseDto)
+        {
+            await _cultureService.UpdateLocalizationResource(id, localizationResourceResponseDto);
+
+            return Ok();
+        }
+
+        [HttpDelete("/LocalizationResources/{namespace}/{key}")]
+        public async Task<IActionResult> DeleteLocalizationResource(string @namespace, string key)
+        {
+            await _cultureService.DeleteLocalizationResource(@namespace, key);
+
+            return Ok();
+        }
 
         // Your code here
         // Implement endpoints for crud operations (no relation to localization needed here, just normal cruds)

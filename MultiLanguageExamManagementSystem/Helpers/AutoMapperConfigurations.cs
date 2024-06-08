@@ -8,9 +8,12 @@ namespace LifeEcommerce.Helpers
     {
         public AutoMapperConfigurations() 
         {
-            CreateMap<Language, LanguageDto>().ReverseMap();
-            CreateMap<Country, CountryDto>().ReverseMap();
-            CreateMap<LocalizationResource, LocalizationResourceDto>().ReverseMap();
+            CreateMap<Language, LanguageRequestDTO>().ReverseMap();
+            CreateMap<Language, LanguageResponseDTO>().ReverseMap();
+            CreateMap<LocalizationResource, LocalizationResourceRequestDTO>().ReverseMap();
+            CreateMap<LocalizationResource, LocalizationResourceResponseDTO>().ReverseMap();
+
+            CreateMap<LocalizationResource, LocalizationResource>();
         }
     }
 }
