@@ -38,29 +38,32 @@ namespace MultiLanguageExamManagementSystem.Data
                 .HasIndex(lr => new { lr.LanguageId, lr.Namespace, lr.Key })
                 .IsUnique();
 
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Exams)
-                .WithOne(e => e.Professor)
+            modelBuilder.Entity<Exam>()
+                .HasOne(e => e.Professor)
+                .WithMany()
                 .HasForeignKey(e => e.ProfessorId);
 
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.TakenExams)
-                .WithOne(te => te.User)
+            modelBuilder.Entity<ExamQuestion>()
+                .HasKey(eq => new { eq.ExamId, eq.QuestionId });
+
+            modelBuilder.Entity<ExamQuestion>()
+                .HasOne(eq => eq.Exam)
+                .WithMany(e => e.ExamQuestions)
+                .HasForeignKey(eq => eq.ExamId);
+
+            modelBuilder.Entity<ExamQuestion>()
+                .HasOne(eq => eq.Question)
+                .WithMany(q => q.ExamQuestions)
+                .HasForeignKey(eq => eq.QuestionId);
+
+            modelBuilder.Entity<TakenExam>()
+                .HasOne(te => te.User)
+                .WithMany()
                 .HasForeignKey(te => te.UserId);
-
-            modelBuilder.Entity<Exam>()
-                .HasMany(e => e.Questions)
-                .WithMany(q => q.Exams)
-                .UsingEntity(j => j.ToTable("ExamQuestions"));
-
-            modelBuilder.Entity<Exam>()
-                .HasMany(e => e.TakenExams)
-                .WithOne(te => te.Exam)
-                .HasForeignKey(te => te.ExamId);
 
             modelBuilder.Entity<TakenExam>()
                 .HasOne(te => te.Exam)
-                .WithMany(e => e.TakenExams)
+                .WithMany()
                 .HasForeignKey(te => te.ExamId);
         }
 

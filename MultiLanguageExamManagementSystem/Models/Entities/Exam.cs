@@ -8,6 +8,5 @@ public class Exam
     public DateTime EndTime { get; set; }
     public int ProfessorId { get; set; }
     public User Professor { get; set; } 
-    public ICollection<Question> Questions { get; set; } 
-    public ICollection<TakenExam> TakenExams { get; set; }
+    public ICollection<ExamQuestion> ExamQuestions { get; set; } 
 }
