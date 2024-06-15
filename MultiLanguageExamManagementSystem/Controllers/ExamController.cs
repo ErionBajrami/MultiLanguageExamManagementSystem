@@ -29,12 +29,9 @@ public class ExamController : ControllerBase
 
     
     [HttpGet("GetAllExamsDetailed")]
-    public async Task<List<Exam>> GetExamsDetailed()
+    public async Task<IEnumerable<Exam>> GetExamsDetailed()
     {
-        var Exams = await _unitOfWork.Repository<Exam>()
-            .GetAll()
-            .Select( x => _mapper.Map<Exam>(x))
-            .ToListAsync();
+        var Exams = _examService.GetAvailableExams();
 
         return Exams;
     }

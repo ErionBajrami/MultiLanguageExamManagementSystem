@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using MultiLanguageExamManagementSystem.Models.Entities;
+using System.Linq.Expressions;
 
 namespace MultiLanguageExamManagementSystem.Data.Repository.IRepository
 {
@@ -14,5 +15,13 @@ namespace MultiLanguageExamManagementSystem.Data.Repository.IRepository
         void Delete(Tentity entity);
         void DeleteRange(List<Tentity> entity);
         Task SaveChangesAsync();
+
+
+
+        #region Exam
+
+        IEnumerable<RequestExam> GetUserRequests(int userId, int examId);
+
+        #endregion
     }
 }

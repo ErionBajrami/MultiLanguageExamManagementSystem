@@ -1,4 +1,6 @@
-﻿using MultiLanguageExamManagementSystem.Data.Repository.IRepository;
+﻿using Microsoft.EntityFrameworkCore;
+using MultiLanguageExamManagementSystem.Data.Repository.IRepository;
+using MultiLanguageExamManagementSystem.Models.Entities;
 using System.Linq.Expressions;
 
 namespace MultiLanguageExamManagementSystem.Data.Repository
@@ -71,5 +73,18 @@ namespace MultiLanguageExamManagementSystem.Data.Repository
         {
             await _dbContext.SaveChangesAsync();
         }
+
+
+
+        #region Exam
+
+        public IEnumerable<RequestExam> GetUserRequests(int userId, int examId)
+        {
+            return _dbContext.RequestExams
+                .Where(r => r.UserId == userId && r.ExamId == examId)
+                .ToList();
+        }
+
+        #endregion
     }
 }

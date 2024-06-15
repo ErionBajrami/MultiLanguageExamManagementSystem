@@ -1,6 +1,9 @@
+using LifeEcommerce.Helpers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MultiLanguageExamManagementSystem.Data;
 using MultiLanguageExamManagementSystem.Data.UnitOfWork;
+using MultiLanguageExamManagementSystem.Models.Dtos.Question;
 using MultiLanguageExamManagementSystem.Models.Entities;
 
 namespace MultiLanguageExamManagementSystem.Services;
@@ -8,99 +11,150 @@ namespace MultiLanguageExamManagementSystem.Services;
 public class ExamService
 {
     private readonly UnitOfWork _unitOfWork;
-    private readonly ApplicationDbContext _context;
 
-    public ExamService(UnitOfWork unitOfWork, ApplicationDbContext context)
+    public ExamService(UnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _context = context;
     }
-    
-    
+
+
+    public IEnumerable<Exam> GetAvailableExams()
+    {
+        return _unitOfWork.Repository<Exam>().GetAll();
+    }
+
+
+    public async Task<int> CreateExam(string title, DateTime startTime, DateTime endTime, int professorId)
+    {
+        // Create a new exam instance
+        var exam = new Exam
+        {
+            Title = title,
+            StartTime = startTime,
+            EndTime = endTime,
+            ProfessorId = professorId
+        };
+
+        var allQuestions = await _unitOfWork.Repository<Question>().GetAll().ToListAsync();
+
+   
+        HelperMethods.Shuffle(allQuestions);
+        var selectedQuestions = allQuestions.Take(10).ToList();
+
+        foreach (var question in selectedQuestions)
+        {
+            var examQuestion = new ExamQuestion
+            {
+                Exam = exam,
+                Question = question
+            };
+
+            exam.ExamQuestions.Add(examQuestion);
+        }
+
+        _unitOfWork.Repository<Exam>().Create(exam);
+        _unitOfWork.Complete();
+
+        return exam.ExamId;
+    }
+
+    public async Task<IEnumerable<QuestionRetrieveDTO>> GetAllQuestions()
+    {
+        var questions = await _unitOfWork.Repository<Question>()
+            .GetAll()
+            .Select(q => new QuestionRetrieveDTO
+            {
+                Text = q.QuestionText
+            })
+            .ToListAsync();
+
+        return questions;
+    }
+
+    public async Task<string> AddQuestions(string questionText, string correctAnswer)
+    {
+        var newQuestion = new Question
+        {
+            QuestionText = questionText,
+            CorrectAnswer = correctAnswer
+        };
+
+        _unitOfWork.Repository<Question>().Create(newQuestion);
+        _unitOfWork.Complete();
+
+        return newQuestion.QuestionText; 
+    }
+
+
+
     public async Task RequestExam(int userId, int examId)
     {
-        var user = await _unitOfWork.Repository<User>().GetById(x => x.UserId == userId).FirstOrDefaultAsync();
-        var exam = await _unitOfWork.Repository<Exam>().GetById(x => x.ExamId == examId).FirstOrDefaultAsync();
-
-        if (user == null)
-            return;
-        
-        if(exam == null)
-            return;
-
-
-        var countRequests = _unitOfWork.Repository<RequestExam>()
-            .GetById(x => x.Exam.ExamId == examId && x.Student.UserId == userId)
-            .ToList();
-
-        if (countRequests.Count() > 3)
-            return;
+        var existingRequests = _unitOfWork.Repository<RequestExam>().GetUserRequests(userId, examId);
+        if (existingRequests.Count() >= 3)
+            throw new InvalidOperationException("No more attempts left");
 
         var reqExam = new RequestExam
         {
-            Student = user,
-            Exam = exam
+            UserId = userId,
+            ExamId = examId,
+            Status = RequestStatus.Pending,
+            RequestDate = DateTime.Now
         };
         
         _unitOfWork.Repository<RequestExam>().Create(reqExam);
         _unitOfWork.Complete();
     }
 
-    // public async Task ApproveRequest(int adminId, int userId, int examId) // prof id, user id, exam id
-    // {
-    //     var userProfessor = _unitOfWork.Repository<User>()
-    //         .GetById(x => x.UserId == adminId)
-    //         .Where(x => x.RoleEnum == UserRoleEnum.Admin);
-    //     
-    //     var User = _unitOfWork.Repository<User>()
-    //         .GetById(x => x.UserId == userId)
-    //         .Where(x => x.RoleEnum == UserRoleEnum.Student);
-    //     
-    //     var examToBeApproved = _unitOfWork.Repository<RequestExam>()
-    //         .GetById(x => x.ExamId == examId && x.StudentId == userId);
-    //
-    //     if (userProfessor == null)
-    //         return;
-    //     
-    //     if(examToBeApproved == null)
-    //         return;
-    //
-    //     examToBeApproved.Exam.ApprovedRequest = true;
-    //     
-    //     _unitOfWork.Complete();
-    // }
-    
-    
-    public async Task ApproveRequest(int adminId, int userId, int examId)
+
+    public bool ApproveRequest(int requestId)
     {
-        // Check if the admin exists
-        var admin = _unitOfWork.Repository<User>()
-            .GetById(x => x.UserId == adminId && x.RoleEnum == UserRoleEnum.Admin);
+        var request =  _unitOfWork.Repository<RequestExam>().GetById(x => x.RequestExamId == requestId).FirstOrDefault();
 
-        if (admin == null)
-            throw new UnauthorizedAccessException("Invalid Admin");
+        if(request != null && request.Status == RequestStatus.Pending)
+        {
+            request.Status = RequestStatus.Approved;
+            _unitOfWork.Repository<RequestExam>().Update(request);
 
-        // Check if the student exists
-        var student = _unitOfWork.Repository<User>()
-            .GetById(x => x.UserId == userId && x.RoleEnum == UserRoleEnum.Student);
+            _unitOfWork.Complete();
+        }
 
-        if (student == null)
-            throw new ArgumentException("Invalid Student");
-
-        // Check if the exam request exists
-        // var examRequest = _unitOfWork.Repository<RequestExam>()
-        //     .GetByCondition(x => x.ExamId == examId && x.StudentId == userId);
-        
-        var examRequest = _context.Exam.
-
-        if (examRequest == null)
-            throw new ArgumentException("Invalid Exam Request");
-
-        // Approve the exam request
-        examRequest.Exam.ApprovedRequest = true;
-
-        // Save changes
-        await _unitOfWork.SaveAsync();
+        return false;
     }
+
+
+    public bool RejectRequest(int requestId)
+    {
+        var request = _unitOfWork.Repository<RequestExam>().GetById(x => x.RequestExamId == requestId).FirstOrDefault();
+
+        if(request != null && request.Status == RequestStatus.Pending)
+        {
+            request.Status = RequestStatus.Rejected;
+            _unitOfWork.Repository<RequestExam>().Update(request);
+
+            _unitOfWork.Complete();
+        }
+
+        return false;
+    }
+
+    public IEnumerable<Exam> GetApprovedExams(int userId)
+    {
+        var approvedExams = _unitOfWork.Repository<RequestExam>().GetByCondition(x => x.UserId == userId && x.Status == RequestStatus.Approved);
+
+        return approvedExams.Select(x => x.Exam);
+    }
+
+
+    public Exam GetExamQuestions(int examId)
+    {
+        var exam = _unitOfWork.Repository<Exam>()
+            .GetByCondition(e => e.ExamId == examId)
+            .Include(e => e.ExamQuestions) 
+            .FirstOrDefault();
+
+        return exam;
+    }
+
+
 
 }

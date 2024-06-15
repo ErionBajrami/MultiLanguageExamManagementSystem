@@ -10,6 +10,8 @@ namespace MultiLanguageExamManagementSystem.Data
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Exam> Exams { get; set; }
+        public DbSet<ExamQuestion> ExamQuestions { get; set; }
+        public DbSet<RequestExam> RequestExams { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<TakenExam> TakenExams { get; set; }
         public DbSet<Language> Languages { get; set; }
@@ -56,6 +58,27 @@ namespace MultiLanguageExamManagementSystem.Data
                 .WithMany(q => q.ExamQuestions)
                 .HasForeignKey(eq => eq.QuestionId);
 
+            modelBuilder.Entity<RequestExam>()
+               .HasOne(er => er.User)
+               .WithMany()
+               .HasForeignKey(er => er.UserId);
+
+            modelBuilder.Entity<RequestExam>()
+              .HasOne(er => er.Exam)
+              .WithMany()
+              .HasForeignKey(er => er.ExamId);
+
+            modelBuilder.Entity<ExamResult>()
+                .HasOne(er => er.User)
+                .WithMany()
+                .HasForeignKey(er => er.UserId);
+
+            modelBuilder.Entity<ExamResult>()
+                .HasOne(er => er.Exam)
+                .WithMany()
+                .HasForeignKey(er => er.ExamId);
+
+
             modelBuilder.Entity<TakenExam>()
                 .HasOne(te => te.User)
                 .WithMany()
@@ -65,6 +88,16 @@ namespace MultiLanguageExamManagementSystem.Data
                 .HasOne(te => te.Exam)
                 .WithMany()
                 .HasForeignKey(te => te.ExamId);
+
+            modelBuilder.Entity<ExamResult>()
+               .HasOne(er => er.User)
+               .WithMany()
+               .HasForeignKey(er => er.UserId);
+
+            modelBuilder.Entity<ExamResult>()
+                .HasOne(er => er.Exam)
+                .WithMany()
+                .HasForeignKey(er => er.ExamId);
         }
 
     }
