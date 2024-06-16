@@ -4,5 +4,6 @@ public class Question
     public string QuestionText { get; set; }
     public string? GivenAnswer { get; set; }
     public string CorrectAnswer { get; set; }
+
     public ICollection<ExamQuestion> ExamQuestions { get; set; }
 }

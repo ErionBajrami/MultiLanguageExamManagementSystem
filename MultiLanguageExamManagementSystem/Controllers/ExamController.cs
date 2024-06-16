@@ -1,69 +1,85 @@
-using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MultiLanguageExamManagementSystem.Data;
-using MultiLanguageExamManagementSystem.Data.UnitOfWork;
-using MultiLanguageExamManagementSystem.Models.Dtos;
+using MultiLanguageExamManagementSystem.Models.Dtos.Question;
 using MultiLanguageExamManagementSystem.Models.Entities;
 using MultiLanguageExamManagementSystem.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MultiLanguageExamManagementSystem.Models.Dtos;
 
-namespace MultiLanguageExamManagementSystem.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class ExamController : ControllerBase
+namespace MultiLanguageExamManagementSystem.Controllers
 {
-    private readonly UnitOfWork _unitOfWork;
-    private readonly ApplicationDbContext _context;
-    private readonly IMapper _mapper;
-    private readonly ExamService _examService;
-
-    public ExamController(UnitOfWork unitOfWork, ApplicationDbContext context, IMapper mapper, ExamService examService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ExamController : ControllerBase
     {
-        _unitOfWork = unitOfWork;
-        _context = context;
-        _mapper = mapper;
-        _examService = examService;
-    }
+        private readonly ExamService _examService;
 
-    
-    [HttpGet("GetAllExamsDetailed")]
-    public async Task<IEnumerable<Exam>> GetExamsDetailed()
-    {
-        var Exams = _examService.GetAvailableExams();
-
-        return Exams;
-    }
-    
-    [HttpGet("GetAllExams")]
-    public async Task<ActionResult<List<AddExamDTO>>> GetAllExams()
-    {
-        var examRepository = _unitOfWork.Repository<Exam>();
-        var exams = examRepository.GetAll();
-    
-        var addExams = exams.Select(exam => new AddExamDTO
+        public ExamController(ExamService examService)
         {
-            ProfessorId = exam.ProfessorId,
-            Title = exam.Title,
-            StartTime = exam.StartTime,
-            EndTime = exam.EndTime
-        }).ToList();
-    
-        return Ok(addExams);
-    }
+            _examService = examService;
+        }
 
-    [HttpPost("AddExam")]
-    public async Task AddExam(AddExamDTO addExamDto)
-    {
-        var addExam = _mapper.Map<Exam>(addExamDto);
-        _unitOfWork.Repository<Exam>().Create(addExam);
-        _unitOfWork.Complete();
-    }
+        [HttpGet("GetAllExamDetail")]
+        public async Task<ActionResult<List<ExamDetailsDTO>>> GetAllExamDetail()
+        {
+            var examDetails = await _examService.GetAllExamDetailsAsync();
+            return Ok(examDetails);
+        }
 
-    [HttpPost("RequestExam")]
-    public async Task RequestExam(int userId, int examId)
-    {
-        await _examService.RequestExam(userId, examId);
+
+        [HttpGet("GetAllExamRequests")]
+        public async Task<ActionResult<List<RequestExam>>> GetAllExamRequests()
+        {
+            var examRequests = _examService.GetExamRequests();
+            return Ok(examRequests);
+        }
+
+        [HttpPost("AddExam")]
+        public async Task<ActionResult> AddExam(AddExamDTO addExamDto)
+        {
+            var examId = await _examService.CreateExam(addExamDto.Title, addExamDto.StartTime, addExamDto.EndTime, addExamDto.ProfessorId);
+            return Ok(examId);
+        }
+
+        [HttpPost("RequestExam")]
+        public async Task<ActionResult> RequestExam(int userId, int examId)
+        {
+            await _examService.RequestExam(userId, examId);
+            return Ok();
+        }
+
+        [HttpPost("ApproveRequest")]
+        public ActionResult ApproveRequest(int requestId)
+        {
+            var result = _examService.ApproveRequest(requestId);
+            if (result)
+                return Ok();
+            return BadRequest();
+        }
+
+        [HttpPost("RejectRequest")]
+        public ActionResult RejectRequest(int requestId)
+        {
+            var result = _examService.RejectRequest(requestId);
+            if (result)
+                return Ok();
+            return BadRequest();
+        }
+
+        [HttpGet("GetApprovedExams")]
+        public ActionResult<IEnumerable<Exam>> GetApprovedExams(int userId)
+        {
+            var approvedExams = _examService.GetApprovedExams(userId);
+            return Ok(approvedExams);
+        }
+
+        [HttpGet("GetExamQuestions/{examId}")]
+        public ActionResult<Exam> GetExamQuestions(int examId)
+        {
+            var exam = _examService.GetExamQuestions(examId);
+            if (exam == null)
+                return NotFound();
+            return Ok(exam);
+        }
     }
 }

@@ -10,5 +10,5 @@ public class Exam
     public int ProfessorId { get; set; }
     public User Professor { get; set; }
     public bool ApprovedRequest { get; set; } = false;
-    public ICollection<ExamQuestion> ExamQuestions { get; set; } 
+    public ICollection<ExamQuestion> ExamQuestions { get; set; } = new List<ExamQuestion>();
 }

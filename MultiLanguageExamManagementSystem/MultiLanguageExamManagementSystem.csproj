@@ -29,7 +29,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\Dtos\User\" />
 	  <Folder Include="Resources\" />
 	</ItemGroup>
 
