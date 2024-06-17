@@ -5,6 +5,6 @@ namespace MultiLanguageExamManagementSystem.Models.Dtos.User
     public class UserRetrieveDTO
     {
         public string Username { get; set; }
-        public UserRoleEnum RoleEnum { get; set; }
+        public string Role { get; set; }
     }
 }
