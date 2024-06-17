@@ -23,6 +23,25 @@ namespace MultiLanguageExamManagementSystem.Controllers
         }
 
 
+
+        #region Create
+
+
+
+        [HttpPost("AddQuestion")]
+        [Authorize(Roles = "Professor")]
+        public async Task<ActionResult<int>> AddQuestion([FromBody] QuestionInsertDTO questionDto)
+        {
+            var question = await _questionsService.AddQuestions(questionDto.Text, questionDto.PossibleAnswers, questionDto.CorrectAnswer);
+
+            return Ok(question);
+        }
+        #endregion
+
+
+        #region Read
+
+
         [HttpGet("GetAllQuestionsUser")]
         public async Task<IEnumerable<QuestionRetrieveDTO>> GetAllQuestionsUser()
         {
@@ -30,6 +49,7 @@ namespace MultiLanguageExamManagementSystem.Controllers
 
             return questions;
         }
+
 
         [HttpGet("GetAllQuestionsProfessor")]
         [Authorize(Roles = "Professor")]
@@ -39,15 +59,50 @@ namespace MultiLanguageExamManagementSystem.Controllers
 
             return questions;
         }
+        #endregion
 
-        [HttpPost("AddQuestion")]
-        public async Task<ActionResult<int>> AddQuestion([FromBody] QuestionInsertDTO questionDto)
+
+        #region Update
+
+
+
+        [HttpPut("{questionId}")]
+        [Authorize(Roles = "Professor")]
+        public async Task<IActionResult> UpdateQuestion(int questionId, [FromBody] UpdateQuestionDTO updateQuestionDTO)
         {
-            var question = await _questionsService.AddQuestions(questionDto.Text, questionDto.PossibleAnswers, questionDto.CorrectAnswer);
+            var updatedQuestion = await _questionsService.UpdateQuestion(
+                questionId,
+                updateQuestionDTO.QuestionText,
+                updateQuestionDTO.PossibleAnswers,
+                updateQuestionDTO.CorrectAnswer
+            );
 
-            return Ok(question);
+            return Ok(updatedQuestion);
         }
 
-        
+
+
+        #endregion
+
+
+        #region Delete
+
+
+
+        [HttpDelete("{questionId}")]
+        [Authorize(Roles = "Professor")]
+        public async Task<IActionResult> DeleteQuestion(int questionId)
+        {
+            await _questionsService.DeleteQuestion(questionId);
+            return Ok("Question deleted successfully");
+        }
+
+
+
+        #endregion
+
+
+
+
     }
 }

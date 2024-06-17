@@ -5,10 +5,11 @@ using MultiLanguageExamManagementSystem.Data;
 using MultiLanguageExamManagementSystem.Data.UnitOfWork;
 using MultiLanguageExamManagementSystem.Models.Dtos.Question;
 using MultiLanguageExamManagementSystem.Models.Entities;
+using MultiLanguageExamManagementSystem.Services.IServices;
 
 namespace MultiLanguageExamManagementSystem.Services;
 
-public class QuestionsService
+public class QuestionsService : IQuestionService
 {
     private readonly UnitOfWork _unitOfWork;
 
@@ -17,6 +18,26 @@ public class QuestionsService
         _unitOfWork = unitOfWork;
     }
 
+    #region Create
+
+
+    public async Task<Question> AddQuestions(string questionText, string possibleAnswers, string correctAnswer)
+    {
+        var newQuestion = new Question
+        {
+            QuestionText = questionText,
+            possibleAnswers = possibleAnswers,
+            CorrectAnswer = correctAnswer
+        };
+        _unitOfWork.Repository<Question>().Create(newQuestion);
+        _unitOfWork.Complete();
+
+        return newQuestion;
+    }
+
+
+
+    #endregion
 
     #region Read
 
@@ -55,22 +76,42 @@ public class QuestionsService
 
     #endregion
 
+    #region Update
 
-    #region Create
 
-
-    public async Task<Question> AddQuestions(string questionText, string possibleAnswers, string correctAnswer)
+    public async Task<Question> UpdateQuestion(int questionId, string questionText, string possibleAnswers, string correctAnswer)
     {
-        var newQuestion = new Question
-        {
-            QuestionText = questionText,
-            possibleAnswers = possibleAnswers,
-            CorrectAnswer = correctAnswer
-        };
-        _unitOfWork.Repository<Question>().Create(newQuestion);
+        var question = _unitOfWork.Repository<Question>().GetById(x => x.QuestionId == questionId).FirstOrDefault();
+
+        if (question == null)
+            throw new Exception("Question not found");
+
+        question.QuestionText = questionText;
+        question.possibleAnswers = possibleAnswers;
+        question.CorrectAnswer = correctAnswer;
+
+        _unitOfWork.Repository<Question>().Update(question);
         _unitOfWork.Complete();
 
-        return newQuestion;
+        return question;
+    }
+
+
+
+    #endregion
+
+    #region Delete
+
+
+    public async Task DeleteQuestion(int questionId)
+    {
+        var question = _unitOfWork.Repository<Question>().GetById(x => x.QuestionId == questionId).FirstOrDefault();
+
+        if (question == null)
+            throw new Exception("Question not found");
+
+        _unitOfWork.Repository<Question>().Delete(question);
+        _unitOfWork.Complete();
     }
 
 

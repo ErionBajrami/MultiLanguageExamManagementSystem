@@ -27,6 +27,7 @@ namespace MultiLanguageExamManagementSystem.Controllers
 
 
         [HttpGet("GetAllExamDetail")]
+        [Authorize(Roles = "Professor")]
         public async Task<ActionResult<List<ExamDetailsDTO>>> GetAllExamDetail()
         {
             var examDetails = await _examService.GetAllExamDetailsAsync();
@@ -34,6 +35,7 @@ namespace MultiLanguageExamManagementSystem.Controllers
         }
 
         [HttpGet("GetAllExamRequests")]
+        [Authorize(Roles = "Professor")]
         public async Task<ActionResult<List<RequestExam>>> GetAllExamRequests()
         {
             var examRequests = _examService.GetExamRequests();
@@ -103,6 +105,22 @@ namespace MultiLanguageExamManagementSystem.Controllers
         #region Update
 
 
+
+        [HttpPut("{examId}")]
+        [Authorize(Roles = "Professor")]
+        public async Task<IActionResult> UpdateExam(int examId, [FromBody] UpdateExamDTO updateExamDTO)
+        {
+            var updatedExam = await _examService.UpdateExam(
+                examId,
+                updateExamDTO.Title,
+                updateExamDTO.StartTime,
+                updateExamDTO.EndTime,
+                updateExamDTO.ProfessorId
+            );
+
+            return Ok(updatedExam);
+        }
+
         [HttpPost("ApproveRequest")]
         [Authorize(Roles = "Professor")]
         public ActionResult ApproveRequest(int requestId)
@@ -129,6 +147,21 @@ namespace MultiLanguageExamManagementSystem.Controllers
         #endregion
 
 
+        #region Delete
 
+
+        
+        [HttpDelete("{examId}")]
+        [Authorize(Roles = "Professor")]
+        public async Task<IActionResult> DeleteExam(int examId)
+        { 
+            await _examService.DeleteExam(examId);
+            return Ok("Exam deleted successfully");
+            
+        }
+
+
+
+        #endregion
     }
 }
