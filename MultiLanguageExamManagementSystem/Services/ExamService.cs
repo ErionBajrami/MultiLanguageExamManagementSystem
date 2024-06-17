@@ -181,7 +181,13 @@ public class ExamService
 
         if (exam == null)
             throw new Exception("Exam is null");
-        var questions = exam.ExamQuestions.Select(x => x).ToList();
+
+
+        var questions = _unitOfWork.Repository<ExamQuestion>()
+            .GetByCondition(x => x.ExamId == examId)
+            .Include(x => x.Question)
+            .ToList();
+
 
         int correctAnswersCount = 0;
         foreach (var question in questions)
