@@ -11,14 +11,10 @@ namespace MultiLanguageExamManagementSystem.Controllers
     [ApiController]
     public class QuestionsController : ControllerBase
     {
-        private readonly UnitOfWork _unitOfWork;
-        private readonly ExamService _examService;
         private readonly QuestionsService _questionsService;
 
-        public QuestionsController(UnitOfWork unitOfWork, ExamService examService, QuestionsService questionsService)
+        public QuestionsController(QuestionsService questionsService)
         {
-            _unitOfWork = unitOfWork;
-            _examService = examService;
             _questionsService = questionsService;
         }
 

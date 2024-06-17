@@ -23,6 +23,44 @@ namespace MultiLanguageExamManagementSystem.Controllers
             _examService = examService;
         }
 
+
+        #region Create
+
+
+        [HttpPost("AddExam")]
+        [Authorize(Roles = "Professor")]
+        public async Task<ActionResult> AddExam(AddExamDTO addExamDto)
+        {
+            var examId = await _examService.CreateExam(addExamDto.Title, addExamDto.StartTime, addExamDto.EndTime, addExamDto.ProfessorId);
+            return Ok(examId);
+        }
+
+
+        [HttpPost("RequestExam")]
+        public async Task<ActionResult> RequestExam(int userId, int examId)
+        {
+            await _examService.RequestExam(userId, examId);
+            return Ok();
+        }
+
+
+        [HttpPost("SubmitExam")]
+        public async Task<ActionResult<ExamResultDTO>> SubmitExamAsync(int userId, int examId, Dictionary<int, string> answers)
+        {
+            try
+            {
+                var examResultDTO = await _examService.SubmitExam(userId, examId, answers);
+                return Ok(examResultDTO);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        #endregion
+
         #region Read
 
 
@@ -62,45 +100,6 @@ namespace MultiLanguageExamManagementSystem.Controllers
 
 
         #endregion
-
-
-        #region Create
-
-
-        [HttpPost("AddExam")]
-        [Authorize(Roles = "Professor")]
-        public async Task<ActionResult> AddExam(AddExamDTO addExamDto)
-        {
-            var examId = await _examService.CreateExam(addExamDto.Title, addExamDto.StartTime, addExamDto.EndTime, addExamDto.ProfessorId);
-            return Ok(examId);
-        }
-
-
-        [HttpPost("RequestExam")]
-        public async Task<ActionResult> RequestExam(int userId, int examId)
-        {
-            await _examService.RequestExam(userId, examId);
-            return Ok();
-        }
-
-
-        [HttpPost("SubmitExam")]
-        public async Task<ActionResult<ExamResultDTO>> SubmitExamAsync(int userId, int examId, Dictionary<int, string> answers)
-        {
-            try
-            {
-                var examResultDTO = await _examService.SubmitExam(userId, examId, answers);
-                return Ok(examResultDTO);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-
-        #endregion
-
 
         #region Update
 
@@ -145,7 +144,6 @@ namespace MultiLanguageExamManagementSystem.Controllers
 
 
         #endregion
-
 
         #region Delete
 

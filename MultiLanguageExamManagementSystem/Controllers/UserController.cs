@@ -13,14 +13,10 @@ namespace MultiLanguageExamManagementSystem.Controllers;
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
-    private readonly UnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly IAuthService _authService;
 
-    public UserController(UnitOfWork unitOfWork, IMapper mapper, IAuthService authService)
+    public UserController(IAuthService authService)
     {
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _authService = authService;
     }
 
@@ -78,11 +74,26 @@ public class UserController : ControllerBase
 
     #region Update
 
+
+    [HttpPut("{userId}")]
+    public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserDTO updateUserDto)
+    {
+        var updatedUser = _authService.UpdateUser(userId, updateUserDto.Username, updateUserDto.Password);
+        return Ok(updatedUser);
+    }
+
+
+
     #endregion
 
     #region Delete
 
-
+    [HttpDelete("{userId}")]
+    public async Task<IActionResult> DeleteUser(int userId)
+    {
+        await _authService.DeleteUser(userId);
+        return Ok("User deleted succesfully");
+    }
 
     #endregion
 

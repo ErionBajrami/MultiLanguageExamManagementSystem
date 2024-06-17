@@ -38,7 +38,7 @@ namespace MultiLanguageExamManagementSystem.Services.IServices
 
         #region Update
 
-        User UpdateUser(int userId, string username, string password, string email);
+        User UpdateUser(int userId, string username, string password);
 
         #endregion
 

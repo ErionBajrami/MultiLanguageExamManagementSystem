@@ -100,7 +100,7 @@ namespace MultiLanguageExamManagementSystem.Services
 
 
 
-        public User UpdateUser(int userId, string username, string password, string email)
+        public User UpdateUser(int userId, string username, string password)
         {
             var user =  _unitOfWork.Repository<User>().GetById(x=> x.UserId == userId).FirstOrDefault();
 
