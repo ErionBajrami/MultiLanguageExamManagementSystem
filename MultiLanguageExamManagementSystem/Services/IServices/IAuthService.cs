@@ -5,7 +5,50 @@ namespace MultiLanguageExamManagementSystem.Services.IServices
 {
     public interface IAuthService
     {
-        AuthResponseDTO Authenticate(LoginDTO login);
+        
+        
+
+       
+        
+
+       
+
+
+        #region Create
+
+
+
         void SignUp(SignUpDTO signUp);
+        Task AddUser(User user);
+
+
+
+        #endregion
+
+        #region Read
+
+
+
+        Task<List<User>> GetAllUsers();
+        AuthResponseDTO Authenticate(LoginDTO login);
+
+
+
+        #endregion
+
+        #region Update
+
+        User UpdateUser(int userId, string username, string password, string email);
+
+        #endregion
+
+        #region Delete
+
+
+        Task DeleteUser(int userId);
+
+
+        #endregion
+
     }
 }

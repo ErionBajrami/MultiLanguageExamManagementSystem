@@ -38,11 +38,11 @@ public class UserController : ControllerBase
 
     [HttpPost("AddUser")]
     [Authorize(Roles = "Professor")]
-    public async Task AddUser(User user)
+    public async Task<IActionResult> AddUser(User user)
     {
-        var AddUser = _mapper.Map<User>(user);
-        _unitOfWork.Repository<User>().Create(AddUser);
-        _unitOfWork.Complete();
+        await _authService.AddUser(user);
+
+        return Ok("User created successfully");
     }
 
 
@@ -55,13 +55,9 @@ public class UserController : ControllerBase
 
     [HttpGet("GetAllUsers")]
     [Authorize(Roles = "Professor")]
-    public async Task<List<User>> GetUsers()
+    public async Task<List<User>> GetAllUsers()
     {
-        var users = await _unitOfWork.Repository<User>()
-            .GetAll()
-            .ToListAsync();
-
-        return users;
+        return await _authService.GetAllUsers();
     }
 
 

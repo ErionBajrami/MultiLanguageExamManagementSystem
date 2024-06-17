@@ -1,4 +1,6 @@
-﻿using LifeEcommerce.Helpers;
+﻿using AutoMapper;
+using LifeEcommerce.Helpers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MultiLanguageExamManagementSystem.Data.UnitOfWork;
 using MultiLanguageExamManagementSystem.Models.Dtos;
@@ -15,12 +17,56 @@ namespace MultiLanguageExamManagementSystem.Services
 
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
-        public AuthService(IConfiguration configuration, IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public AuthService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _configuration = configuration;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
+        #region Create
+
+
+
+        public void SignUp(SignUpDTO signUp)
+        {
+            var existingUser = _unitOfWork.Repository<User>().GetByCondition(u => u.Username == signUp.Username).FirstOrDefault();
+            if (existingUser != null)
+                throw new Exception("User already exists");
+
+            var newUser = new User
+            {
+                Username = signUp.Username,
+                Password = HelperMethods.HashPassword(signUp.Password),
+                Role = signUp.Role
+            };
+
+            _unitOfWork.Repository<User>().Create(newUser);
+            _unitOfWork.Complete();
+        }
+
+
+        public async Task AddUser(User user)
+        {
+            var AddUser = _mapper.Map<User>(user);
+            _unitOfWork.Repository<User>().Create(AddUser);
+            _unitOfWork.Complete();
+        }
+
+
+        #endregion
+
+        #region Read
+
+        public async Task<List<User>> GetAllUsers()
+        {
+            var users = await _unitOfWork.Repository<User>()
+                .GetAll()
+                .ToListAsync();
+
+            return users;
+        }
 
         public AuthResponseDTO Authenticate(LoginDTO login)
         {
@@ -47,21 +93,55 @@ namespace MultiLanguageExamManagementSystem.Services
             return new AuthResponseDTO { Token = tokenString, Username = user.Username };
         }
 
-        public void SignUp(SignUpDTO signUp)
+
+        #endregion
+
+        #region Update
+
+
+
+        public User UpdateUser(int userId, string username, string password, string email)
         {
-            var existingUser = _unitOfWork.Repository<User>().GetByCondition(u => u.Username == signUp.Username).FirstOrDefault();
-            if (existingUser != null)
-                throw new Exception("User already exists");
+            var user =  _unitOfWork.Repository<User>().GetById(x=> x.UserId == userId).FirstOrDefault();
 
-            var newUser = new User
-            {
-                Username = signUp.Username,
-                Password = HelperMethods.HashPassword(signUp.Password),
-                Role = signUp.Role
-            };
+            if (user == null)
+                throw new Exception("User not found");
 
-            _unitOfWork.Repository<User>().Create(newUser);
+            user.Username = username;
+            user.Password = HelperMethods.HashPassword(password);
+
+            _unitOfWork.Repository<User>().Update(user);
             _unitOfWork.Complete();
+
+            return user;
         }
+
+
+        #endregion
+
+        #region Delete
+
+
+
+        public Task DeleteUser(int userId)
+        {
+            var user = _unitOfWork.Repository<User>().GetById(x=> x.UserId == userId).FirstOrDefault();
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            _unitOfWork.Repository<User>().Delete(user);
+            _unitOfWork.Complete();
+
+            return Task.CompletedTask;
+        }
+
+
+
+        #endregion
+
+
+
+
     }
 }
