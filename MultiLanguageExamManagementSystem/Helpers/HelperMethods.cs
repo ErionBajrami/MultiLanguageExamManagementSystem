@@ -1,4 +1,6 @@
 ﻿using System.Linq.Expressions;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace LifeEcommerce.Helpers
 {
@@ -21,6 +23,19 @@ namespace LifeEcommerce.Helpers
                 list[k] = list[n];
                 list[n] = value;
             }
+        }
+
+        public static string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+        }
+
+        public static bool VerifyPasswordHash(string password, string storedHash)
+        {
+            var hashOfInput = HashPassword(password);
+            return string.Equals(hashOfInput, storedHash);
         }
     }
 }

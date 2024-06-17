@@ -58,11 +58,19 @@ public class ExamService
         return examDetailsDTOs;
     }
 
+    public Exam GetExam(int id)
+    {
+        return _unitOfWork.Repository<Exam>()
+            .GetById(x => x.ExamId == id)
+            .Include(e => e.ExamQuestions)
+            .ThenInclude(eq => eq.Question)
+            .FirstOrDefault();
+    }
 
     public IEnumerable<RequestExam> GetExamRequests()
     {
         return _unitOfWork.Repository<RequestExam>()
-            .GetByCondition(x => x.Status == RequestStatus.Rejected);
+            .GetByCondition(x => x.Status == RequestStatus.Pending);
     }
 
     public ExamQuestionsDTO GetExamQuestions(int examId)
@@ -108,7 +116,7 @@ public class ExamService
 
         var professor = _unitOfWork.Repository<User>().GetById(x => x.UserId == professorId).FirstOrDefault();
 
-        if (professor == null || professor.RoleEnum != UserRoleEnum.Professor)
+        if (professor == null || professor.Role != "Professor")
             throw new Exception("Professor is null or User is not a Professor");
 
 

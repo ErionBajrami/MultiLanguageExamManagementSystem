@@ -5,11 +5,14 @@ using MultiLanguageExamManagementSystem.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MultiLanguageExamManagementSystem.Models.Dtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace MultiLanguageExamManagementSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ExamController : ControllerBase
     {
         private readonly ExamService _examService;
@@ -34,7 +37,9 @@ namespace MultiLanguageExamManagementSystem.Controllers
             return Ok(examRequests);
         }
 
+
         [HttpPost("AddExam")]
+        [Authorize(Roles = "Professor")]
         public async Task<ActionResult> AddExam(AddExamDTO addExamDto)
         {
             var examId = await _examService.CreateExam(addExamDto.Title, addExamDto.StartTime, addExamDto.EndTime, addExamDto.ProfessorId);
