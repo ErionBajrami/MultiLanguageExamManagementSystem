@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiLanguageExamManagementSystem.Data.UnitOfWork;
 using MultiLanguageExamManagementSystem.Models.Dtos.Question;
@@ -22,10 +23,19 @@ namespace MultiLanguageExamManagementSystem.Controllers
         }
 
 
-        [HttpGet("GetAllQuestions")]
-        public async Task<IEnumerable<QuestionRetrieveDTO>> GetAllQuestions()
+        [HttpGet("GetAllQuestionsUser")]
+        public async Task<IEnumerable<QuestionRetrieveDTO>> GetAllQuestionsUser()
         {
-            var questions = await _questionsService.GetAllQuestions();
+            var questions = await _questionsService.GetAllQuestionsUser();
+
+            return questions;
+        }
+
+        [HttpGet("GetAllQuestionsProfessor")]
+        [Authorize(Roles = "Professor")]
+        public async Task<IEnumerable<QuestionInsertDTO>> GetAllQuestionsProfessor()
+        {
+            var questions = await _questionsService.GetAllQuestionsProfessor();
 
             return questions;
         }
@@ -33,7 +43,7 @@ namespace MultiLanguageExamManagementSystem.Controllers
         [HttpPost("AddQuestion")]
         public async Task<ActionResult<int>> AddQuestion([FromBody] QuestionInsertDTO questionDto)
         {
-            var question = await _questionsService.AddQuestions(questionDto.Text, questionDto.CorrectAnswer);
+            var question = await _questionsService.AddQuestions(questionDto.Text, questionDto.PossibleAnswers, questionDto.CorrectAnswer);
 
             return Ok(question);
         }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MultiLanguageExamManagementSystem.Data;
 using MultiLanguageExamManagementSystem.Data.UnitOfWork;
 using MultiLanguageExamManagementSystem.Models.Dtos;
+using MultiLanguageExamManagementSystem.Models.Dtos.Exam;
 using MultiLanguageExamManagementSystem.Models.Dtos.Question;
 using MultiLanguageExamManagementSystem.Models.Entities;
 
@@ -50,6 +51,7 @@ public class ExamService
             ExamQuestions = exam.ExamQuestions.Select(x => new QuestionDetailsDTO
             {
                 Text = x.Question.QuestionText,
+                PossibleAnswers = x.Question.possibleAnswers,
                 CorrectAnswer = x.Question.CorrectAnswer,
                 GivenAnswer = x.Question.GivenAnswer
             }).ToList()
@@ -90,7 +92,8 @@ public class ExamService
             ExamQuestions = exam.ExamQuestions
                     .Select(x => new QuestionRetrieveDTO
                     {
-                        Text = x.Question.QuestionText
+                        Text = x.Question.QuestionText,
+                        PossibleAsnwers = x.Question.possibleAnswers
                     })
                     .ToList()
         };
@@ -172,7 +175,46 @@ public class ExamService
     }
 
 
+    public async Task<ExamResultDTO> SubmitExam(int userId, int examId, Dictionary<int, string> answers)
+    {
+        var exam = _unitOfWork.Repository<Exam>().GetByCondition(x => x.ExamId == examId).FirstOrDefault();
 
+        if (exam == null)
+            throw new Exception("Exam is null");
+        var questions = exam.ExamQuestions.Select(x => x).ToList();
+
+        int correctAnswersCount = 0;
+        foreach (var question in questions)
+        {
+            if (answers.ContainsKey(question.QuestionId) && (answers[question.QuestionId] == question.Question.CorrectAnswer))
+            {
+                correctAnswersCount++;
+            }
+        }
+
+        var score = (double)correctAnswersCount / answers.Count * 100;
+
+        var examResult = new ExamResult
+        {
+            UserId = userId,
+            ExamId = examId,
+            TotalQuestions = questions.Count,
+            CorrectAnswers = correctAnswersCount,
+            Score = score,
+        };
+
+        _unitOfWork.Repository<ExamResult>().Create(examResult);
+        _unitOfWork.Complete();
+
+        return new ExamResultDTO
+        {
+            UserId = userId,
+            ExamId = examId,
+            TotalQuestions = questions.Count,
+            CorrectAnswers = correctAnswersCount,
+            Score = score
+        };
+    }
     #endregion
 
     #region Update

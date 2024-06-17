@@ -17,30 +17,63 @@ public class QuestionsService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IEnumerable<QuestionRetrieveDTO>> GetAllQuestions()
+
+    #region Read
+
+
+
+    public async Task<IEnumerable<QuestionRetrieveDTO>> GetAllQuestionsUser()
     {
         var questions = await _unitOfWork.Repository<Question>()
             .GetAll()
-            .Select(q => new QuestionRetrieveDTO
+            .Select(x => new QuestionRetrieveDTO
             {
-                Text = q.QuestionText
+                Text = x.QuestionText,
+                PossibleAsnwers = x.possibleAnswers
             })
             .ToListAsync();
 
         return questions;
     }
 
-    public async Task<string> AddQuestions(string questionText, string correctAnswer)
+    public async Task<IEnumerable<QuestionInsertDTO>> GetAllQuestionsProfessor()
+    {
+        var questions = await _unitOfWork.Repository<Question>()
+            .GetAll()
+            .Select(x => new QuestionInsertDTO
+            {
+                Text = x.QuestionText,
+                PossibleAnswers = x.possibleAnswers,
+                CorrectAnswer = x.CorrectAnswer
+            })
+            .ToListAsync();
+
+        return questions;
+    }
+
+
+
+    #endregion
+
+
+    #region Create
+
+
+    public async Task<Question> AddQuestions(string questionText, string possibleAnswers, string correctAnswer)
     {
         var newQuestion = new Question
         {
             QuestionText = questionText,
+            possibleAnswers = possibleAnswers,
             CorrectAnswer = correctAnswer
         };
-
         _unitOfWork.Repository<Question>().Create(newQuestion);
         _unitOfWork.Complete();
 
-        return newQuestion.QuestionText; 
+        return newQuestion;
     }
+
+
+
+    #endregion
 }

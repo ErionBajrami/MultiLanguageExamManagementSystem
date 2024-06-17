@@ -11,6 +11,9 @@ using MultiLanguageExamManagementSystem.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using MultiLanguageExamManagementSystem.Models.Entities;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 // Load environment variables
 Env.Load();
@@ -37,13 +40,16 @@ builder.Services.AddScoped<UnitOfWork>();
 builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionsService>();
 
+
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-    });
 
+
+    });
 
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 
